@@ -1,0 +1,3 @@
+[submodule "git_examples"]
+	path = git_examples
+	url = git@github.com:kubeflow/examples.git
