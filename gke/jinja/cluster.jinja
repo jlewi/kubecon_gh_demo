@@ -50,25 +50,6 @@ resources:
       #        - https://www.googleapis.com/auth/devstorage.read_only
       #        - https://www.googleapis.com/auth/logging.write
       #        - https://www.googleapis.com/auth/monitoring
-- name: cpu-pool
-  type: container.v1.nodePool
-  properties:
-    project: {{ properties['project'] }}
-    zone: {{ properties['zone'] }}
-    clusterId: {{ CLUSTER_NAME }}
-    nodePool:
-      name: cpu-pool      
-      initialNodeCount: 3
-      config:          
-        machineType: n1-standard-8
-        oauthScopes:
-        # Attaching cloud-platform scope to nodes is not good practice
-        # But it simplifies demos.
-          - https://www.googleapis.com/auth/cloud-platform
-          - https://www.googleapis.com/auth/compute
-          - https://www.googleapis.com/auth/devstorage.read_only
-          - https://www.googleapis.com/auth/logging.write
-          - https://www.googleapis.com/auth/monitoring
 
 # nodePools:
 #  - name: cpu-pool

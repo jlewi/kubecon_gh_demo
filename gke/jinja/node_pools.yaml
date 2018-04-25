@@ -19,6 +19,9 @@ resources:
 - name: demo
   type: node_pools.jinja
   properties:
+    # Name of the cluster
+    # Keep in sync with cluster.jinja
+    cluster: gke-cluster-demo
     zone: us-east1-d
     # We create a very small initial pool.
     # Actual nodes will be managed as additional node pools.
