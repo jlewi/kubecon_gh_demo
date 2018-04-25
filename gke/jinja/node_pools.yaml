@@ -13,11 +13,11 @@
 # limitations under the License.
 
 imports:
-- path: cluster.jinja
+- path: node_pools.jinja
 
 resources:
 - name: demo
-  type: cluster.jinja
+  type: node_pools.jinja
   properties:
     zone: us-east1-d
     # We create a very small initial pool.
