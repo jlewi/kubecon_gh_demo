@@ -27,6 +27,8 @@ resources:
       name: {{ CLUSTER_NAME }}
       # 
       initialNodeCount: {{ properties['initialNodeCount'] }}
+      # We need 1.9 to support GPUs without requiring Alpha.
+      initialClusterVersion: 1.9.6-gke.1
       nodeConfig:
         oauthScopes:
         - https://www.googleapis.com/auth/compute
@@ -37,33 +39,59 @@ resources:
 # We manage the node pools as separate resources.
 # We do this so that if we want to make changes we can delete the existing resource and then recreate it.
 # Updating doesn't work so well because we are limited in what changes GKE's update method supports.
-      # nodePools:
-      #  - name: cpu-pool
-      #    initialNodeCount: 3
-      #    config:
-      #      machineType: n1-standard-8
-      #      oauthScopes:
-              # Attaching cloud-platform scope to nodes is not good practice
-              # But it simplifies demos.
-      #        - https://www.googleapis.com/auth/cloud-platform
-      #        - https://www.googleapis.com/auth/compute
-      #        - https://www.googleapis.com/auth/devstorage.read_only
-      #        - https://www.googleapis.com/auth/logging.write
-      #        - https://www.googleapis.com/auth/monitoring
 
-# nodePools:
-#  - name: cpu-pool
-#    initialNodeCount: 3
-#    config:
-#      machineType: n1-standard-8
-#      oauthScopes:
+- name: cpu-pool
+  type: container.v1.nodePool
+  properties:
+    project: {{ properties['project'] }}
+    zone: {{ properties['zone'] }}
+    clusterId: {{ CLUSTER_NAME }}
+    nodePool:
+      name: cpu-pool      
+      initialNodeCount: 3
+      config:          
+        machineType: n1-standard-8
+        oauthScopes:
         # Attaching cloud-platform scope to nodes is not good practice
         # But it simplifies demos.
-#        - https://www.googleapis.com/auth/cloud-platform
-#        - https://www.googleapis.com/auth/compute
-#        - https://www.googleapis.com/auth/devstorage.read_only
-#        - https://www.googleapis.com/auth/logging.write
-#        - https://www.googleapis.com/auth/monitoring
+          - https://www.googleapis.com/auth/cloud-platform
+          - https://www.googleapis.com/auth/compute
+          - https://www.googleapis.com/auth/devstorage.read_only
+          - https://www.googleapis.com/auth/logging.write
+          - https://www.googleapis.com/auth/monitoring
+
+  metadata:
+    dependsOn:
+    - {{ CLUSTER_NAME }}
+
+- name: gpu-pool
+  type: container.v1.nodePool
+  properties:
+    project: {{ properties['project'] }}
+    zone: {{ properties['zone'] }}
+    clusterId: {{ CLUSTER_NAME }}
+    nodePool:
+      name: gpu-pool      
+      initialNodeCount: 3
+      config:          
+        machineType: n1-standard-8
+        oauthScopes:
+        # Attaching cloud-platform scope to nodes is not good practice
+        # But it simplifies demos.
+          - https://www.googleapis.com/auth/cloud-platform
+          - https://www.googleapis.com/auth/compute
+          - https://www.googleapis.com/auth/devstorage.read_only
+          - https://www.googleapis.com/auth/logging.write
+          - https://www.googleapis.com/auth/monitoring
+        accelerators:
+          - acceleratorCount: 1
+            acceleratorType: nvidia-tesla-k80
+
+  metadata:
+    dependsOn:
+    # We can only create 1 node pool at a ime.
+    - cpu-pool
+
       #  - name: gpu-pool
       #    initialNodeCount: 3
       #    config:
