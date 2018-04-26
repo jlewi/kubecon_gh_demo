@@ -70,21 +70,50 @@ gcloud deployment-manager --project=${DEMO_PROJECT} deployments create --config=
 
 	* DEMO_PROJECT should be the project created in the previous step.
 
-### Create Node Pools
-Node pools are managed as a separate deployment because the update the update method for nodepools doesn't allow arbitrary fields to be changed so if we want to make changes the way to do this
+### Updating Node Pools
+Because the the update method for nodepools doesn't allow arbitrary fields to be changed so if we want to make changes the way to do this
 
 	* Delete existing deployment
 	* Create new deployment with updated configs
 
 
+## Deploying Kubeflow
+
+We use the ksonnet app checked in [here](https://github.com/kubeflow/examples/tree/master/github_issue_summarization/ks-kubeflow)
+
+Create an environment for this deployment
+
 ```
-gcloud deployment-manager --project=kubecon-gh-demo-1 deployments create node-pools --config=node_pools.yaml
+gcloud --project=${DEMO_PROJECT} container clusters get-credentials --zone=${ZONE} gke-cluster-demo
+cd git_examples/github_issue_summarization/ks-kubeflow
+ks env add demo --namespace=kubeflow
 ```
 
-TODO(jlewi): We should use [dependsOn](https://cloud.google.com/deployment-manager/docs/configuration/create-explicit-dependencies)
-to create ordering
-   * We'd like to have a single deployment with multiple resources
-   
+Configure the environment
+
+```
+ks param set --env=${ENV} iap-ingress ipName static-ip
+ks param set --env=${ENV} iap-ingress hostname ${FQDN}
+```
+
+Use your domain registrar to register the FQDN
+
+Deploy it
+
+```
+kubectl create namespace kubeflow
+ks apply ${ENV} -c kubeflow-core
+ks apply ${ENV} -c cert-manager
+ks apply ${ENV} -c iap-ingress
+```
+
+## Creating the ksonnet app 
+
+These instructions only need to be run when creating the ksonnet app which should probably be checked into source control
+
+1. Follow our user guide create an inital app
+1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
+
 ## Troubleshooting
 
 ```
