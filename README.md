@@ -24,7 +24,7 @@ permission to create projects
 
 ## To create a new project
 
-1. Modify project_createion/config.yaml
+1. Modify project_creation/config.yaml
 
 	* Change the project name
 
@@ -94,17 +94,44 @@ Configure the environment
 ```
 ks param set --env=${ENV} iap-ingress ipName static-ip
 ks param set --env=${ENV} iap-ingress hostname ${FQDN}
+ks param set --env=${ENV} kubeflow-core jupyterHubAuthenticator iap
 ```
 
 Use your domain registrar to register the FQDN
 
-Deploy it
+   * TODO(jlewi): Can we use CLOUD DNS to register a domain like kubeflow-demos? How would we register DNS names for IPs in a different
+     project?
+
+Deploy Kubeflow
 
 ```
+kubectl create clusterrolebinding cluster-admin-${USER}-kubeflow --clusterrole=cluster-admin --user=${YOUR GOOGLE ACCOUNT}
 kubectl create namespace kubeflow
 ks apply ${ENV} -c kubeflow-core
 ks apply ${ENV} -c cert-manager
 ks apply ${ENV} -c iap-ingress
+``````
+
+## Deploying the GH demo
+
+Create a GitHub token
+
+```
+kubectl -n kubeflow create secret generic github-token --from-literal=github-oauth=${GITHUB_TOKEN}
+```
+
+```
+ks apply ${ENV} -c seldon
+ks apply ${ENV} -c issue-summarization
+ks apply ${ENV} -c ui
+```
+
+## Access the App
+
+The UI will be availabe at 
+
+```
+https://${FQDN}/issue-summarization/
 ```
 
 ## Creating the ksonnet app 
@@ -115,6 +142,8 @@ These instructions only need to be run when creating the ksonnet app which shoul
 1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
 
 ## Troubleshooting
+
+### Deployment Manager
 
 ```
 ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operation-1524679659292-56ab0257d0560-60fae1f4-f22ce361]: errors:
@@ -137,3 +166,7 @@ ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operat
     kubeflow.org"}],"statusMessage":"Bad Request","requestPath":"https://cloudresourcemanager.googleapis.com/v1/projects/kubecon-gh-demo-1:setIamPolicy","httpMethod":"POST"}}'
 ```
 	* You can work around this by creating a group within the org and then adding external members to the group.
+
+### Seldon Server
+
+* If model server is crash looping; try deleting the pod.
