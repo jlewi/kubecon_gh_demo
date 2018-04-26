@@ -12,7 +12,7 @@ To make it really easy to declaratively define demo infrastructure e.g.
 In order to use Deployment Manager to create other projects we need to setup a project that will own the deployments.
 
 I created:
-  * Folder demo-projects to contain all the projects
+  * In GCP org kubeflow.org I created folder demo-projects to contain all the projects
   - Project: kf-demo-owner to own the deployments
   - script setup_demo_owner_project.sh to run required commands to setup kf-demo-owner
 
@@ -76,6 +76,16 @@ Because the the update method for nodepools doesn't allow arbitrary fields to be
 	* Delete existing deployment
 	* Create new deployment with updated configs
 
+
+### Setup GPUs
+
+```
+kubectl create -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/k8s-1.9/nvidia-driver-installer/cos/daemonset-preloaded.yaml
+```
+
+### Setup RBAC
+kubectl create clusterrolebinding cluster-admin-binding \
+--clusterrole cluster-admin --user $(gcloud config get-value account)
 
 ## Deploying Kubeflow
 
