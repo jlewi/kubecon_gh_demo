@@ -54,6 +54,8 @@ gcloud deployment-manager --project=kf-demo-owner deployments update kubecon-gh-
 		* 200 CPUs (All Region)
 		* 100 Tb PDs in each region
 		* 10 K80s in each region
+		* 10 backend services
+		* 10 health checks
 
 ## To Setup the cluster
 
@@ -150,7 +152,8 @@ These instructions only need to be run when creating the ksonnet app which shoul
 
 1. Follow our user guide create an inital app
 1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
-
+	* Skip the step to create a static IP
+	
 ## Troubleshooting
 
 ### Deployment Manager
