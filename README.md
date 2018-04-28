@@ -57,6 +57,16 @@ gcloud deployment-manager --project=kf-demo-owner deployments update kubecon-gh-
 		* 10 backend services
 		* 10 health checks
 
+1. Create a new bucket for this project
+
+  ```
+  gsutil mb -p ${PROJECT} gs://${PROJECT}-gh-demo
+  ```
+
+1. Copy `env-kubecon-gh-demo-1.sh` to `env-${PROJECT}.sh`
+
+  * Set/change all the values to correspond to this new project.
+
 ## To Setup the cluster
 
 ### Create the Cluster
@@ -263,7 +273,43 @@ gsutil cp -r gs://kubeflow-examples-data/gh_issue_summarization/model/v20180426 
 
     * It will fail before Train Model because we are missing pydot
     * Scroll down to Train Model and Run all cells below
-## Script
+
+1. Source the environment variables for your environment
+
+  ```
+  source env-${NAME-OF-ENVIRONMENT}.sh
+  ```
+
+1. Submit the trainining job.
+
+  
+  ```
+  cd git_examples/github_issue_summarization/ks-kubeflow
+  SUFFIX=$(date +%m%d%H%M)
+  T2TOUTPUT=gs://${BUCKET}/gh-t2t-out/${SUFFIX}
+  T2TNAME=gh-t2t-trainer-${SUFFIX}
+  ks param set --env=${ENV} tensor2tensor name ${T2TNAME}
+  ks param set --env=${ENV} tensor2tensor outputGCSPath ${T2TOUTPUT}
+  ks apply ${ENV} -c tensor2tensor
+  ```  
+
+1. Setup TensorBoard
+
+  ```
+  ks param set --env=${ENV} tensorboard logDir ${T2OUTPUT}
+  ks appy ${ENV} -c tensorboard
+  ```
+
+  * Check you can access tensorboard at
+
+  ```
+  https://${FQDN}/tensorboard/${T2TNAME}/
+  ```
+
+  * The trailing slash matters
+  * If you get an error **upstream connect failure** try waiting and refreshing.
+
+## Demo Script
 
 1. Start at JupyterHub; spawn a notebook use the image
 
@@ -292,6 +338,24 @@ gsutil cp -r gs://kubeflow-examples-data/gh_issue_summarization/model/v20180426 
 	* Execute cells to generate predictions
 
 1. Now train at scale.
+
+```
+ ks apply ${ENV} -c tensor2tensor
+```
+
+  * TODO(jlewi): Give the job a unique name?
+
+  * Show the pods
+
+  ```
+  kubectl get pods -l kubeflow.org=""
+  ```
+
+  * You can show logs to show progress
+
+  ```
+  kubectl logs pod ${MAST_POD}
+  ```
 
 
 ## Troubleshooting
