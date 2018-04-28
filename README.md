@@ -148,12 +148,152 @@ https://${FQDN}/issue-summarization/
 
 ## Creating the ksonnet app 
 
+TODO(jlewi): These instructions are probably wrong. We should probably be using the ksonnet app checked into kubeflow-examples.
+  * All we should have to do is add an environment.
+
 These instructions only need to be run when creating the ksonnet app which should probably be checked into source control
 
 1. Follow our user guide create an inital app
 1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
 	* Skip the step to create a static IP
 	
+## Prepare the demo
+
+
+1. Launch a notebook with PVC.
+
+ * Use the image for tf job; you can get the image as follows
+ 
+ ```
+ ks param --env=kubecon-gh-demo-1 list | grep "tfjob.\*image"
+ ```
+
+1. Switch to JupyterLab by changing the suffix of the url from `/tree` to `/lab` e.g.
+
+```
+https://kubecon-gh1.kubeflow.org/user/accounts.google.com%3Ajlewi@kubeflow.org/tree? ->
+https://kubecon-gh1.kubeflow.org/user/accounts.google.com%3Ajlewi@kubeflow.org/lab?
+```
+1. Create a terminal in the notebook
+1. Confirm that a PD is mounted in /home/joyvan/work
+
+  ```
+  df -h
+  Filesystem      Size  Used Avail Use% Mounted on
+  overlay          95G   13G   82G  14% /
+  tmpfs            15G     0   15G   0% /dev
+  tmpfs            15G     0   15G   0% /sys/fs/cgroup
+  /dev/sda1        95G   13G   82G  14% /etc/hosts
+  shm              64M     0   64M   0% /dev/shm
+  /dev/sdb        9.8G   37M  9.3G   1% /home/jovyan/work
+  tmpfs            15G     0   15G   0% /sys/firmware
+  ```
+
+  * Put any work that you want to be saved between container restarts in /home/jovyan/work
+
+1. Due to a bug we need to do the following to make `/home/jovyan/work` writable
+
+   ```
+   kubectl exec -it ${JUPYTER_POD} /bin/bash
+   chown -R jovyan /home/jovyan/work/
+   ```
+
+1. Clone the examples repository into the container
+
+```
+git clone https://github.com/jlewi/examples.git /home/jovyan/work/git_examples
+cd /hom/jovyan/work/git_examples
+git checkout kubecon_demo
+```
+
+	* We are cloning [jlewi@'s fork](https://github.com/jlewi/examples/blob/kubecon_demo/github_issue_summarization/notebooks/Training.ipynb) which has some changes to the notebook
+	  to support the demo on branch kubecon_demo.
+
+	* If you use this branch you shouldn't have to make the changes listed
+	  below to the notebook
+
+1. Open in `/home/jovyan/work/git_examples/github_issue_summarization/notebooks/Training.ipynb`
+	* Make sure its a Python3 kernel (look in the upper right corner)
+
+1. Modify the notebook; change DATA_DIR to the following
+
+	```
+	%env DATA_DIR=/home/jovyan/work/github-issues-data
+	```
+
+	* TODO(jlewi): We should consider checking this into the demo repository.
+
+1. Download the pretrained model; execute the following in a terminal in the notebook
+
+```
+mkdir -p /home/jovyan/work/model
+gsutil cp -r gs://kubeflow-examples-data/gh_issue_summarization/model/v20180426 /home/jovyan/work/model
+```
+ 
+    * This allows us to load the model in the notebook for predictions
+
+ 1. Load the trained model
+
+    * Go to the notebook section see Example Results on hold out set
+    * Add and execute the following cell
+
+    ```
+    from keras.models import load_model
+    import dill as dpickle
+    body_pp_file = "/home/jovyan/work/model/v20180426/body_pp.dpkl"
+
+    with open(body_pp_file, 'rb') as body_file:
+      body_pp = dpickle.load(body_file)
+        
+    title_pp_file = "/home/jovyan/work/model/v20180426/title_pp.dpkl"
+    with open(title_pp_file, 'rb') as title_file:
+      title_pp = dpickle.load(title_file)
+          
+    model_file = "/home/jovyan/work/model/v20180426/seq2seq_model_tutorial.h5"
+    seq2seq_Model = load_model(model_file)
+    ```
+
+    	* TODO(jlewi): We should probably check this in possibly to the existing notebook
+
+1. Comment out the cell to download the data
+
+	* TODO(jlewi): Maybe add an if statement so we can disable it easily
+
+1. Run all cells
+
+    * It will fail before Train Model because we are missing pydot
+    * Scroll down to Train Model and Run all cells below
+## Script
+
+1. Start at JupyterHub; spawn a notebook use the image
+
+ ```
+ ks param --env=kubecon-gh-demo-1 list | grep "tfjob.\*image"
+ ```
+
+ 	* TODO(jlewi): Need to add daemonset to precache images so loading it is fast.
+
+ 	* Talking points
+
+ 		* Jupyter on K8s provides reproducible environments via containers
+ 		* HTTPS - Can manage security centrally
+
+1. Talk about developing/experimenting in a notebook
+
+   * Use sampled data 
+   * Look at output
+
+1. Show define model architecture
+
+1. Generate some predictions
+
+	* Go to section See Example Results on Holdout
+	* Load the model (if you haven't already)
+	* Execute cells to generate predictions
+
+1. Now train at scale.
+
+
 ## Troubleshooting
 
 ### Deployment Manager
