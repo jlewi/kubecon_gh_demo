@@ -169,13 +169,18 @@ These instructions only need to be run when creating the ksonnet app which shoul
 	
 ## Prepare the demo
 
+1. Launch the image prepuller
+
+```
+ks apply ${ENV} -c prepull-daemon
+```
 
 1. Launch a notebook with PVC.
 
  * Use the image for tf job; you can get the image as follows
  
  ```
- ks param --env=kubecon-gh-demo-1 list | grep "tfjob.\*image"
+ ks param --env=kubecon-gh-demo-1 list | grep "tfjob.*image.*"
  ```
 
 1. Switch to JupyterLab by changing the suffix of the url from `/tree` to `/lab` e.g.
@@ -357,7 +362,23 @@ gsutil cp -r gs://kubeflow-examples-data/gh_issue_summarization/model/v20180426 
   kubectl logs pod ${MAST_POD}
   ```
 
+1. Show tensorboard
 
+   * We provide manifests for running tensorboard
+   * We've also integrated it with our reverse proxy for Ambassador to make it easy for datascientists to access
+
+
+1. Show predictions in the notebook
+
+1. Now want a server
+
+   * Show Seldon code 
+
+   ```
+    kubectl get seldondeployments -o yaml
+   ```
+
+    * Show Seldon 
 ## Troubleshooting
 
 ### Deployment Manager
