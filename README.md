@@ -185,13 +185,16 @@ These instructions only need to be run when creating the ksonnet app which shoul
 1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
 	* Skip the step to create a static IP
 	
-## Prepare the demo
+
+## Precache images
 
 1. Launch the image prepuller
 
 ```
 ks apply ${ENV} -c prepull-daemon
 ```
+
+## Prepare the demo
 
 1. Launch a notebook with PVC.
 
@@ -315,6 +318,8 @@ gsutil cp -r gs://kubeflow-examples-data/gh_issue_summarization/model/v20180426 
   ks param set --env=${ENV} tensor2tensor outputGCSPath ${T2TOUTPUT}
   ks apply ${ENV} -c tensor2tensor
   ```  
+
+    * TODO(jlewi): I don't think this actually sets the job name.
 
 1. Setup TensorBoard
 
