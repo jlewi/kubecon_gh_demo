@@ -67,7 +67,7 @@ resources:
                  # Members outside the org must be invited by the org. (TODO(jlewi) is there a way to change that at the folder level)
                  # A work around is to create a group within the org and add external members to that
                    - user:jlewi@kubeflow.org                   
-                   - group:google-team@kubeflow.org
+                   - group:google-kubecon-booth@kubeflow.org
               - role: roles/iap.httpsResourceAccessor
                 members:
                  # NOTE: The DM service account that is creating this project will
@@ -76,7 +76,7 @@ resources:
                  # Members outside the org must be invited by the org. (TODO(jlewi) is there a way to change that at the folder level)
                  # A work around is to create a group within the org and add external members to that
                    - user:jlewi@kubeflow.org                   
-                   - group:google-team@kubeflow.org
+                   - group:google-kubecon-booth@kubeflow.org
         #          - serviceAccount:98765432100@cloudservices.gserviceaccount.com
         #      - role: roles/viewer
         #        members:
