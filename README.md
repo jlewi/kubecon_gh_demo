@@ -24,25 +24,36 @@ permission to create projects
 
 ## To create a new project
 
-1. Modify project_creation/config.yaml
+1. copy project_creation/config-kubecon-gh-demo-1.yaml  to `project_creation/config-${PROJECT}.yaml`
 
-	* Change the project name
+	* Modify `config-${PROJECT}.yaml` change the project name
 
 1. Run
 
 ```
 cd project_creation
-gcloud deployment-manager --project=kf-demo-owner deployments create ${NAME} --config config.yaml
+gcloud deployment-manager --project=kf-demo-owner deployments create ${PROJECT}--config config-${PROJECT}.yaml
 ```
 
 Once you create the deployment if you need to make changes you can just update it with
 
 ```
-gcloud deployment-manager --project=kf-demo-owner deployments update kubecon-gh-demo-1 --config=config.yaml
+gcloud deployment-manager --project=kf-demo-owner deployments update ${PROJECT} --config=config-${PROJECT}.yaml
 ```
 
 
 * You might want to update the IAM section in config.yaml to add users who should be owner of the project
+
+1. Copy `env-kubecon-gh-demo-1.sh` to `env-${PROJECT}`.sh
+
+  * Change the name of the project 
+  * Set `FQDN` to 
+
+  ```
+  FQDN=${PROJECT}.kubeflow.dev
+  ```
+
+    * **.dev** not **.org**
 
 1. Update Resource Quotas for the Project
 
@@ -52,16 +63,18 @@ gcloud deployment-manager --project=kf-demo-owner deployments update kubecon-gh-
 		* In regions us-east1 & us-central1
 		* 100 CPUs per region
 		* 200 CPUs (All Region)
-		* 100 Tb PDs in each region
-		* 10 K80s in each region
+		* 100 Tb PDs standard in each region
+		* 5 K80s in each region
 		* 10 backend services
-		* 10 health checks
+		* 50 health checks
 
 1. Create a new bucket for this project
 
   ```
   gsutil mb -p ${PROJECT} gs://${PROJECT}-gh-demo
   ```
+
+  * TODO(jlewi): We should create this with deployment manager.
 
 1. Copy `env-kubecon-gh-demo-1.sh` to `env-${PROJECT}.sh`
 
@@ -70,24 +83,17 @@ gcloud deployment-manager --project=kf-demo-owner deployments update kubecon-gh-
 ## To Setup the cluster
 
 ### Create the Cluster
-1. Edit `jinja2/config.yaml`
+1. Copy `gke/config-kubecon-gh-demo-1.yaml` to `gke/config-${DEMO_PROJECT}.yaml`
 
 	* Make sure name and zone are set correctly (note `gke-cluster` will be prependend to the name)
 
 1. Create the cluster
 
 ```
-gcloud deployment-manager --project=${DEMO_PROJECT} deployments create --config=cluster.yaml
+gcloud deployment-manager --project=${DEMO_PROJECT} deployments create ${DEMO_PROJECT} --config=cluster-${DEMO_PROJECT}.yaml
 ```
 
 	* DEMO_PROJECT should be the project created in the previous step.
-
-### Updating Node Pools
-Because the the update method for nodepools doesn't allow arbitrary fields to be changed so if we want to make changes the way to do this
-
-	* Delete existing deployment
-	* Create new deployment with updated configs
-
 
 ### Setup GPUs
 
@@ -96,19 +102,36 @@ kubectl create -f https://raw.githubusercontent.com/GoogleCloudPlatform/containe
 ```
 
 ### Setup RBAC
-kubectl create clusterrolebinding cluster-admin-binding \
+
+```
+gcloud --project=${DEMO_PROJECT} container clusters get-credentials --zone=us-east1-d demo
+kubectl create clusterrolebinding cluster-admin-binding-${USER} \
 --clusterrole cluster-admin --user $(gcloud config get-value account)
+```
+
+### Prepare IAP
+
+1. Follow the instructions [Create oauth client credentials](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md#create-oauth-client-credentials) to set
+  * Only follow the Create oauth client credentials instructions
+  * Skip the step to create a static IP
+
+Create the DNS record
+
+```
+./create_dns_record.sh
+```
+  * Make sure you sourced the env-${DEMO_PROJECT}-${CLUSTER}.sh file and set the environment variables.
 
 ## Deploying Kubeflow
 
-We use the ksonnet app checked in [here](https://github.com/kubeflow/examples/tree/master/github_issue_summarization/ks-kubeflow)
+We use the ksonnet app checked in [here](https://github.com/jlewi/kubecon_gh_demo) in directory `git_examples/github_issue_summarization/ks-kubeflow`
 
 Create an environment for this deployment
 
 ```
 gcloud --project=${DEMO_PROJECT} container clusters get-credentials --zone=${ZONE} gke-cluster-demo
 cd git_examples/github_issue_summarization/ks-kubeflow
-ks env add demo --namespace=kubeflow
+ks env add ${DEMO_PROJECT} --namespace=kubeflow
 ```
 
 Configure the environment
@@ -119,16 +142,11 @@ ks param set --env=${ENV} iap-ingress hostname ${FQDN}
 ks param set --env=${ENV} kubeflow-core jupyterHubAuthenticator iap
 ```
 
-Use your domain registrar to register the FQDN
-
-   * TODO(jlewi): Can we use CLOUD DNS to register a domain like kubeflow-demos? How would we register DNS names for IPs in a different
-     project?
-
 Deploy Kubeflow
 
 ```
 kubectl create clusterrolebinding cluster-admin-${USER}-kubeflow --clusterrole=cluster-admin --user=${YOUR GOOGLE ACCOUNT}
-kubectl create namespace kubeflow
+kubectl create namespace ${NAMESPACE}
 ks apply ${ENV} -c kubeflow-core
 ks apply ${ENV} -c cert-manager
 ks apply ${ENV} -c iap-ingress
@@ -144,7 +162,7 @@ kubectl -n kubeflow create secret generic github-token --from-literal=github-oau
 
 ```
 ks apply ${ENV} -c seldon
-ks apply ${ENV} -c issue-summarization
+ks apply ${ENV} -c issue-summarization-model-serving
 ks apply ${ENV} -c ui
 ```
 
@@ -180,7 +198,7 @@ ks apply ${ENV} -c prepull-daemon
  * Use the image for tf job; you can get the image as follows
  
  ```
- ks param --env=kubecon-gh-demo-1 list | grep "tfjob.*image.*"
+ ks param --env=${ENV} list | grep "tfjob.*image.*"
  ```
 
 1. Switch to JupyterLab by changing the suffix of the url from `/tree` to `/lab` e.g.

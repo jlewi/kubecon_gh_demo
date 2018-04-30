@@ -5,9 +5,9 @@
 
 # Bucket and project must be unique for each project 
 # we are setting up to run the demo.
-export BUCKET=kubecon-gh-demo
+export PROJECT=kubecon-booth
 export DEMO_PROJECT=${PROJECT}
-export PROJECT=kubecon-gh-demo-1
+export BUCKET=${PROJECT}-gh-demo
 
 # The name of the ip address as defined in cluster.jinja
 export IP_NAME=static-ip
@@ -15,6 +15,4 @@ export IP_NAME=static-ip
 # ksonnet environment
 export ENV=${PROJECT}
 export NAMESPACE=kubeflow
-# Only project kubecon-gh-demo-1 uses .org every other project
-# should use .dev
-export FQDN=${PROJECT}.kubeflow.org
+export FQDN=${PROJECT}.kubeflow.dev

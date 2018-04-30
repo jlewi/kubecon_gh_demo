@@ -23,3 +23,11 @@ resources:
     # We create a very small initial pool.
     # Actual nodes will be managed as additional node pools.
     initialNodeCount: 1
+    # An arbitrary string appending to name of nodepools
+    # bump this if you want to modify the node pools.
+    # This will cause existing node pools to be deleted and new ones to be created.
+    # Use prefix v so it will be treated as a string.
+    pool-version: v1
+    # Two is small enough to fit within default quota.
+    cpu-pool-initialNodeCount: 2
+    gpu-pool-initialNodeCount: 0    
