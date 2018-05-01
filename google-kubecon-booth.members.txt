@@ -4,6 +4,7 @@ bfusinska@google.com
 chrisheecho@google.com
 jlewi@kubeflow.org
 jlewi@google.com
+kubecondemo@gmail.com
 kunming@google.com
 lunkai@google.com
 shahidmasud@google.com
