@@ -1,1 +1,5 @@
 jlewi.dataflow@gmail.com
+stephan.fabel@canonical.com
+mark.shuttleworth@canonical.com
+marco.ceppi@canonical.com
+carmine.rimi@canonical.com

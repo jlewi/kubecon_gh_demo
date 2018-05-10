@@ -12,6 +12,7 @@ export PROJECT=kubecon-gh-demo-1
 # The name of the ip address as defined in cluster.jinja
 export IP_NAME=static-ip
 
+export IMAGE=gcr.io/kubeflow-examples/tf-job-issue-summarization:v20180428-ff948b2-dirty-3b553c
 # ksonnet environment
 export ENV=${PROJECT}
 export NAMESPACE=kubeflow
