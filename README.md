@@ -147,7 +147,7 @@ https://${FQDN}/tensorboard/gh/
   * Looks like we need to install some libraries
 
     ```
-    pip install ktext
+    RUN pip install --no-cache-dir annoy ktext nltk pydot
     ```
 * Checkout the examples repository and open up the training notebook for the GH issue
 
