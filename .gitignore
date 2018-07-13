@@ -1,2 +1,2 @@
 # Ignore serviceaccounts because we don't want to check them in.
-**iam.gserviceaccount.com.json
+*iam.gserviceaccount.com.json
