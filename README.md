@@ -67,6 +67,7 @@ gcloud deployment-manager --project=kf-demo-owner deployments update ${PROJECT} 
 		* 5 K80s in each region
 		* 10 backend services
 		* 50 health checks
+    * 24 in use ip addresses
 
 1. Create a new bucket for this project
 
@@ -83,44 +84,9 @@ gcloud deployment-manager --project=kf-demo-owner deployments update ${PROJECT} 
 ## To Setup the cluster
 
 ### Create the Cluster
-1. Copy `gke/config-kubecon-gh-demo-1.yaml` to `gke/config-${DEMO_PROJECT}.yaml`
+1. Modify create_deployment.sh
 
-	* Make sure name and zone are set correctly (note `gke-cluster` will be prependend to the name)
-
-1. Create the cluster
-
-```
-gcloud deployment-manager --project=${DEMO_PROJECT} deployments create ${DEMO_PROJECT} --config=cluster-${DEMO_PROJECT}.yaml
-```
-
-	* DEMO_PROJECT should be the project created in the previous step.
-
-### Setup GPUs
-
-```
-kubectl create -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/k8s-1.9/nvidia-driver-installer/cos/daemonset-preloaded.yaml
-```
-
-### Setup RBAC
-
-```
-gcloud --project=${DEMO_PROJECT} container clusters get-credentials --zone=us-east1-d demo
-kubectl create clusterrolebinding cluster-admin-binding-${USER} \
---clusterrole cluster-admin --user $(gcloud config get-value account)
-```
-
-### Prepare IAP
-
-1. Follow the instructions [Create oauth client credentials](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md#create-oauth-client-credentials) to set
-  * Only follow the Create oauth client credentials instructions
-  * Skip the step to create a static IP
-
-Create the DNS record
-
-```
-./create_dns_record.sh
-```
-  * Make sure you sourced the env-${DEMO_PROJECT}-${CLUSTER}.sh file and set the environment variables.
+	* Set the correct environment variables configuring the project and deployment.
 
 ## Deploying Kubeflow
 
