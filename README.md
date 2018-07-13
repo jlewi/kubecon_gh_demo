@@ -88,37 +88,11 @@ gcloud deployment-manager --project=kf-demo-owner deployments update ${PROJECT} 
 
 	* Set the correct environment variables configuring the project and deployment.
 
-## Deploying Kubeflow
-
-We use the ksonnet app checked in [here](https://github.com/jlewi/kubecon_gh_demo) in directory `git_examples/github_issue_summarization/ks-kubeflow`
-
-Create an environment for this deployment
-
-```
-gcloud --project=${DEMO_PROJECT} container clusters get-credentials --zone=${ZONE} gke-cluster-demo
-cd git_examples/github_issue_summarization/ks-kubeflow
-ks env add ${DEMO_PROJECT} --namespace=kubeflow
-```
-
-Configure the environment
-
-```
-ks param set --env=${ENV} iap-ingress ipName static-ip
-ks param set --env=${ENV} iap-ingress hostname ${FQDN}
-ks param set --env=${ENV} kubeflow-core jupyterHubAuthenticator iap
-```
-
-Deploy Kubeflow
-
-```
-kubectl create clusterrolebinding cluster-admin-${USER}-kubeflow --clusterrole=cluster-admin --user=${YOUR GOOGLE ACCOUNT}
-kubectl create namespace ${NAMESPACE}
-ks apply ${ENV} -c kubeflow-core
-ks apply ${ENV} -c cert-manager
-ks apply ${ENV} -c iap-ingress
-``````
 
 ## Deploying the GH demo
+
+We use the ksonnet app checked in [here](https://github.com/jlewi/demo_0712) in directory `git_examples/github_issue_summarization/
+
 
 Create a GitHub token
 
@@ -132,6 +106,26 @@ ks apply ${ENV} -c issue-summarization-model-serving
 ks apply ${ENV} -c ui
 ```
 
+Set a bucket for the job output
+```
+ks param set --env=${ENV} tfjob-v1alpha2 output_model_gcs_bucket kubecon-gh-demo
+ks param set --env=${ENV} tfjob-v1alpha2 output_model_gcs_path gh-demo/20180712/output
+```
+
+Run the job
+
+```
+ks apply ${ENV} -c tfjob-v1alpha2
+```
+
+Set tensorboard
+
+```
+ks param set --env=${ENV} tensorboard logDir gs://kubecon-gh-demo/gh-t2t-out
+```
+
+  * Need to use output of T2T job; doesn't look like Keras jobs produces events file
+
 ## Access the App
 
 The UI will be availabe at 
@@ -140,17 +134,22 @@ The UI will be availabe at
 https://${FQDN}/issue-summarization/
 ```
 
-## Creating the ksonnet app 
+Tensorboard will be available at
 
-TODO(jlewi): These instructions are probably wrong. We should probably be using the ksonnet app checked into kubeflow-examples.
-  * All we should have to do is add an environment.
+```
+https://${FQDN}/tensorboard/gh/
+```
 
-These instructions only need to be run when creating the ksonnet app which should probably be checked into source control
+## Start a Jupyter Notebook
 
-1. Follow our user guide create an inital app
-1. Follow [iap.md](https://github.com/kubeflow/kubeflow/blob/master/docs/gke/iap.md) to create IAP components
-	* Skip the step to create a static IP
-	
+* Last time I tried I used `gcr.io/kubeflow-images-public/tensorflow-1.7.0-notebook-cpu:v0.2.1`
+
+  * Looks like we need to install some libraries
+
+    ```
+    pip install ktext
+    ```
+* Checkout the examples repository and open up the training notebook for the GH issue
 
 ## Precache images
 

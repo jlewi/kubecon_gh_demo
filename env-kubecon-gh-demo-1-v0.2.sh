@@ -21,3 +21,8 @@ export CONFIG_FILE=cluster-kubeflow.yaml
 
 # Get the project number
 export PROJECT_NUMBER=`gcloud projects describe ${PROJECT} --format='value(project_number)'`
+
+# This will be determined by create_deployment.sh
+export KUBECTL_CONTEXT=gh-demo-kf-v0-2-1
+
+export ENV=jlewi-demo
