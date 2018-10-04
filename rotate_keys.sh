@@ -11,6 +11,10 @@ USER_EMAIL=${DEPLOYMENT_NAME}-user@${PROJECT}.iam.gserviceaccount.com
 
 SECRETS_DIR=~/secrets
 
+
+kubectl delete secret --namespace=${K8S_NAMESPACE} admin-gcp-sa
+kubectl delete secret --namespace=${K8S_NAMESPACE} user-gcp-sa
+
 # If you get a PERMISION_DENIED error most likely it means you got the email wrong
 gcloud --project=${PROJECT} iam service-accounts keys create ${SECRETS_DIR}/${ADMIN_EMAIL}.json --iam-account ${ADMIN_EMAIL}
 gcloud --project=${PROJECT} iam service-accounts keys create ${SECRETS_DIR}/${USER_EMAIL}.json --iam-account ${USER_EMAIL}
